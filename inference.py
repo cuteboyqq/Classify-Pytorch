@@ -121,9 +121,7 @@ def Calculate_Inference_Accuracy(imagedir,class_list):
     print("len(class_list) =",len(class_list) )
     '''
     =============================================================================
-    initailize count Correct
-                count Wrong
-                Recall
+    initailize count Correct, count Wrong, Recall
     ==============================================================================
     '''
     count_correct = [0]*len(class_list)  
@@ -185,7 +183,7 @@ def Calculate_Inference_Accuracy(imagedir,class_list):
               "correct:",count_correct[i],"wrong:",count_wrong[i],"recall:", str(int(recall[i]*100)),"%")
         
 if __name__=="__main__":
-    
+    GET_INFER_ACCURACY = True
     IMAGE_SIZE = 32
     imagedir = "C:/TLR/datasets/2022-06-17-datasets"
     modelPath = "D:/RepVGG/model/ -Size32-2-2-2-2.pt"
@@ -195,3 +193,14 @@ if __name__=="__main__":
     pred_dir = "D:\RepVGG\inference\TLR_ResNet18" + date + 'Size' + str(IMAGE_SIZE) + '-' + ch + '_result'
    
     Inference(imagedir, modelPath,pred_dir,IMAGE_SIZE)
+    
+    PREDICT_RESULT_IMG = pred_dir
+    class_names = ['GreenLeft', 'GreenRight', 'GreenStraight','RedLeft','RedRight','YellowLeft','YellowRight','others']
+    if GET_INFER_ACCURACY:  
+        imagedir = PREDICT_RESULT_IMG
+        #class_list = ["GreenLeft", "GreenRight", "GreenStraight","RedLeft",
+        #              "RedRight","YellowLeft","YellowRight","others"]
+        class_list = class_names
+        Calculate_Inference_Accuracy(imagedir,class_list)
+    
+    
