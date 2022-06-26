@@ -285,29 +285,29 @@ def train(DO_TRAIN,
 if __name__=="__main__":
     
     DO_TRAIN = True
-    TRAIN_DATA_DIR = r"C:\TLR\datasets\roi"
-    VAL_DATA_DIR = r"C:\TLR\datasets\roi-test"
+    TRAIN_DATA_DIR = r"C:\TLR\datasets\2022-06-17-datasets\roi"
+    VAL_DATA_DIR = r"C:\TLR\datasets\2022-06-17-datasets\roi-test"
     IMAGE_SIZE = 32
     BATCH_SIZE = 300
-    nums_epoch = 1
+    nums_epoch = 50
     ENABLE_VALIDATION = True
     #CM_FILENAME = "repVGG_32_8cls_CM.png"
     class_names = ['GreenLeft', 'GreenRight', 'GreenStraight','RedLeft','RedRight','YellowLeft','YellowRight','others']
     #c1,c2,c3,c4 = 8,16,32,64
-    date = '-20220626-8cls-resnet18-'
+    date = '-20220627-8cls-resnet18-'
     #net = RepVGG(num_blocks=[2, 2, 2, 2], num_classes=8,
     #              width_multiplier=[0.25, 0.25, 0.25, 0.25], override_groups_map=None, deploy=False)
     
-    '''
+    ''' 
     =============================================================================
     Start Training Settings :
         prune channel setting list
     ============================================================================
     '''
     channel_list = [
-     "8-16-32-64",
+     "16-24-32-48",
      "16-32-48-64",
-     "16-32-32-48",
+     "16-32-64-64",
     ]
     num_of_ch = 4
     
@@ -334,8 +334,11 @@ if __name__=="__main__":
         print(c1,c2,c3,c4)
         ch = str(c1) + '-' + str(c2) + '-' + str(c3) + '-' + str(c4)  
         SAVE_MODEL_PATH = 'D:/repVGG/model/' + 'resnet18-Size32-' + ch + '.pt'
-        CM_FILENAME = 'repVGG_32_8cls_CM' + ch + '.png' 
+        CM_FILENAME = 'resnet18_32_8cls_CM_20220627' + ch + '.png' 
         net = ResNet(ResBlock,c1,c2,c3,c4)
+        
+        #net = RepVGG(num_blocks=[2, 2, 2, 2], num_classes=8,
+        #              width_multiplier=[1/c1, 1/c2 , 1/c3, 1/c4], override_groups_map=None, deploy=False)
         if torch.cuda.is_available():
             net.cuda() 
             
@@ -360,7 +363,7 @@ if __name__=="__main__":
     result_dir = "D:/repVGG/result/"
     if not os.path.exists(result_dir):
         os.makedirs(result_dir)
-    result_path = "D:/repVGG/result/ResNet18_Train_Result-20220526.csv"
+    result_path = "D:/repVGG/result/resnet18_Train_Result-20220527.csv"
     import csv
     with open(result_path, 'w') as f:
         # using csv.writer method from CSV package
