@@ -19,6 +19,32 @@ from sklearn.metrics import confusion_matrix
 import os
 import time
 import torch.nn.functional as F
+import math
+from  utils.plot import *
+val_precision_folder_dir = r'D:/RepVGG/plot_graph/precision/val'
+val_recall_folder_dir = r'D:/RepVGG/plot_graph/recall/val'
+train_loss_dir = r'D:/RepVGG/plot_graph/loss/train'
+val_loss_dir = r'D:/RepVGG/plot_graph/loss/val'
+val_acc_dir = r'D:/RepVGG/plot_graph/acc/val'
+model_dir = r'D:/RepVGG/model'
+
+if not os.path.exists(model_dir):
+    os.makedirs(model_dir)
+
+if not os.path.exists(val_precision_folder_dir):
+    os.makedirs(val_precision_folder_dir)
+    
+if not os.path.exists(val_recall_folder_dir):
+    os.makedirs(val_recall_folder_dir)
+    
+if not os.path.exists(train_loss_dir):
+    os.makedirs(train_loss_dir)
+    
+if not os.path.exists(val_loss_dir):
+    os.makedirs(val_loss_dir)
+
+if not os.path.exists(val_acc_dir):
+    os.makedirs(val_acc_dir)
 
 def Get_Confusion_Matrix(y_true, y_pred,class_names,CM_FILENAME):
     # 製作混淆矩陣
@@ -62,6 +88,7 @@ def Calculate_Precision_Recall_Accuracy(cf_matrix,epoch):
     print("avg_precision =",avg_precision)
     print("avg_recall = ",avg_recall)
     print("avg_acc =",avg_acc)
+    return avg_precision, avg_recall, avg_acc
     
 def validate(test_loader, model, criterion, y_pred, y_true):
     model.eval()
@@ -99,10 +126,32 @@ def Do_Validation_At_Each_Epoch(SAVE_MODEL_PATH,
                                 epoch,
                                 CM_FILENAME,
                                 BATCH_SIZE,
-                                class_names):
+                                class_names,
+                                avg_precision_list,
+                                avg_recall_list,
+                                val_loss_list,
+                                avg_acc_list,
+                                epochs,
+                                save_model,
+                                c1,c2,c3,c4,
+                                date):
+    
+    '''
+    ======================================================
+    validation : define plot file name  at each train epoch
+    ======================================================
+    '''
+    ch = str(c1)+'-'+ str(c2) +'-'+ str(c3) +'-'+ str(c4) #set~~~~~~~~~
+    PLOT_PRECISION_NAME = "avg_precision" + date + 'Size' + str(IMAGE_SIZE) +'-' +ch + ".png"
+    PLOT_RECALL_NAME = 'avg_recall' + date + 'Size' + str(IMAGE_SIZE) +'-' +ch + ".png"
+    #PLOT_TRAIN_LOSS_NAME = ' _Loss_Epoch' + date + 'Size' + str(IMAGE_SIZE) +'-' + ch + ".png"
+    PLOT_VAL_LOSS_NAE = 'Val_Loss_Epoch' + date + 'Size' + str(IMAGE_SIZE) + '-'+ch + ".png"
+    PLOT_ACC_NAME = 'avg_acc' + date + 'Size' + str(IMAGE_SIZE) +'-' + ch + ".png"
+    
+    
     '''
     =======================================================
-    Start do validation 
+    validation : Start do validation 
     =======================================================
     '''
     modelPath = SAVE_MODEL_PATH
@@ -155,4 +204,35 @@ def Do_Validation_At_Each_Epoch(SAVE_MODEL_PATH,
         validation : precision, recall, acc
         =============================================================================
         '''
-        Calculate_Precision_Recall_Accuracy(cf_matrix,epoch)
+        avg_precision, avg_recall, avg_acc = Calculate_Precision_Recall_Accuracy(cf_matrix,epoch)
+        
+        '''add avg_pre, avg_recall, val_loss to list'''
+        avg_precision_list.extend([avg_precision])
+        avg_recall_list.extend([avg_recall])
+        val_loss_list.extend(val_loss.view(-1).detach().cpu().numpy())
+        avg_acc_list.extend([avg_acc])
+        '''
+        ==========================================================================
+        validation : plot precision, recall, acc, loss at each epoch 
+        0:precision, 1:recall, 2:acc, 3:val loss
+        ==========================================================================
+        '''
+        '''plot precision/epoch'''
+        sm_pre = Plot_Val_Result_History(0,save_model,epochs,avg_precision_list,val_precision_folder_dir,PLOT_PRECISION_NAME)
+        '''plot recall/epoch'''
+        sm_recall = Plot_Val_Result_History(1,save_model,epochs,avg_recall_list,val_recall_folder_dir,PLOT_RECALL_NAME)
+        '''plot val loss/epoch'''
+        sm_ValLoss = Plot_Val_Result_History(3,save_model,epochs,val_loss_list,val_loss_dir,PLOT_VAL_LOSS_NAE)
+        '''plot val acc/epoch'''
+        sm_acc = Plot_Val_Result_History(2,save_model,epochs,avg_acc_list,val_acc_dir,PLOT_ACC_NAME)
+        #===================================================================
+        #print("TP: {}, FP: {}, FN: {}".format(TP,FP,FN))
+        #print("precision = TP/(TP + FP) :")
+        #print("{}".format(precision))
+        #print("recall = TP/(TP + FN) :")
+        #print("{}".format(recall))
+        print("avg prcision = {}".format(avg_precision))
+        print("avg recall = {}".format(avg_recall))
+        
+        
+        return avg_precision_list, avg_recall_list, val_loss_list, avg_acc_list, sm_pre, sm_recall, sm_ValLoss, sm_acc
