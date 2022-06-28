@@ -181,26 +181,85 @@ def Calculate_Inference_Accuracy(imagedir,class_list):
         #print(class_list[i])
         print(class_list[i],"total=",total[i],
               "correct:",count_correct[i],"wrong:",count_wrong[i],"recall:", str(int(recall[i]*100)),"%")
-        
+
+
+def colorstr(*input):
+    # Colors a string https://en.wikipedia.org/wiki/ANSI_escape_code, i.e.  colorstr('blue', 'hello world')
+    *args, string = input if len(input) > 1 else ('blue', 'bold', input[0])  # color arguments, string
+    colors = {'black': '\033[30m',  # basic colors
+              'red': '\033[31m',
+              'green': '\033[32m',
+              'yellow': '\033[33m',
+              'blue': '\033[34m',
+              'magenta': '\033[35m',
+              'cyan': '\033[36m',
+              'white': '\033[37m',
+              'bright_black': '\033[90m',  # bright colors
+              'bright_red': '\033[91m',
+              'bright_green': '\033[92m',
+              'bright_yellow': '\033[93m',
+              'bright_blue': '\033[94m',
+              'bright_magenta': '\033[95m',
+              'bright_cyan': '\033[96m',
+              'bright_white': '\033[97m',
+              'end': '\033[0m',  # misc
+              'bold': '\033[1m',
+              'underline': '\033[4m'}
+    return ''.join(colors[x] for x in args) + f'{string}' + colors['end']
+
+
+    
 if __name__=="__main__":
-    GET_INFER_ACCURACY = True
+    GET_INFER_ACCURACY = False
     IMAGE_SIZE = 32
-    imagedir = "C:/TLR/datasets/2022-06-17-datasets"
-    modelPath = "D:/RepVGG/model/ -Size32-2-2-2-2.pt"
-    c1,c2,c3,c4=2,2,2,2
+    imagedir = "/home/ali/TLR/datasets/8/2022-06-17-datasets/roi-test"
+    modelPath = "/home/ali/repVGG/model/repVGG-Size32-0.75-0.75-0.75-2.5.pt"
+    c1,c2,c3,c4=0.75,0.75,0.75,2.5
     ch = str(c1)+'-'+ str(c2) +'-'+ str(c3) +'-'+ str(c4) #set~~~~~~~~~
-    date = "-20220627-"
-    pred_dir = "D:\RepVGG\inference\TLR_ResNet18" + date + 'Size' + str(IMAGE_SIZE) + '-' + ch + '_result'
+    date = "-20220628-"
+    pred_dir = "/home/ali/repVGG/inference/TLR_repVGG" + date + 'Size' + str(IMAGE_SIZE) + '-' + ch + '_result'
    
-    Inference(imagedir, modelPath,pred_dir,IMAGE_SIZE)
     
     PREDICT_RESULT_IMG = pred_dir
     class_names = ['GreenLeft', 'GreenRight', 'GreenStraight','RedLeft','RedRight','YellowLeft','YellowRight','others']
     if GET_INFER_ACCURACY:  
         imagedir = PREDICT_RESULT_IMG
+        Inference(imagedir, modelPath,pred_dir,IMAGE_SIZE)
         #class_list = ["GreenLeft", "GreenRight", "GreenStraight","RedLeft",
         #              "RedRight","YellowLeft","YellowRight","others"]
         class_list = class_names
         Calculate_Inference_Accuracy(imagedir,class_list)
+   
+    
+    COLLECT_FP_IMAGES = True
+    import glob
+    import os
+    import shutil
+    import tqdm
+    if COLLECT_FP_IMAGES:
+        
+        def Analysis_img_path(img_path):
+            img = os.path.basename(img_path)
+            GT = img.split("_")[0]
+            predict = img.split("_")[1]
+            return GT, predict
+        
+        save_dir = "/home/ali/repVGG/FP_datasets-2022-06-28-finetune"
+        if not os.path.exists(save_dir):os.makedirs(save_dir)
+        search_dir = PREDICT_RESULT_IMG
+        image_path_list = glob.iglob(os.path.join(search_dir,'**','*.jpg'))
+        
+        pbar = tqdm.tqdm(image_path_list)
+        PREFIX = colorstr("Search FP images")
+        pbar.desc = f'{PREFIX}'
+        for img_path in pbar:
+            #print(img_path)
+            GT, predict = Analysis_img_path(img_path)
+            #print(GT," ",predict)
+            if not predict == GT:
+                save_label_dir = os.path.join(save_dir,GT)
+                if not os.path.exists(save_label_dir):os.makedirs(save_label_dir)
+                shutil.copy(img_path,save_label_dir) 
+   
     
     

@@ -285,8 +285,8 @@ def train(DO_TRAIN,
 if __name__=="__main__":
     
     DO_TRAIN = True
-    TRAIN_DATA_DIR = r"C:\TLR\datasets\2022-06-17-datasets\roi"
-    VAL_DATA_DIR = r"C:\TLR\datasets\2022-06-17-datasets\roi-test"
+    TRAIN_DATA_DIR = r"/home/ali/TLR/datasets/8/2022-06-17-datasets/roi"
+    VAL_DATA_DIR = r"/home/ali/TLR/datasets/8/2022-06-17-datasets/roi-test"
     IMAGE_SIZE = 32
     BATCH_SIZE = 300
     nums_epoch = 50
@@ -294,7 +294,7 @@ if __name__=="__main__":
     #CM_FILENAME = "repVGG_32_8cls_CM.png"
     class_names = ['GreenLeft', 'GreenRight', 'GreenStraight','RedLeft','RedRight','YellowLeft','YellowRight','others']
     #c1,c2,c3,c4 = 8,16,32,64
-    date = '-20220627-8cls-resnet18-'
+    date = '-20220628-8cls-repVGG-'
     #net = RepVGG(num_blocks=[2, 2, 2, 2], num_classes=8,
     #              width_multiplier=[0.25, 0.25, 0.25, 0.25], override_groups_map=None, deploy=False)
     
@@ -305,9 +305,9 @@ if __name__=="__main__":
     ============================================================================
     '''
     channel_list = [
-     "16-24-32-48",
-     "16-32-48-64",
-     "16-32-64-64",
+     "0.75-0.75-0.75-2.5",
+     "1-1-1-2.5",
+     "1.5-1.5-1.5-2.75"
     ]
     num_of_ch = 4
     
@@ -327,18 +327,18 @@ if __name__=="__main__":
         channel_line = channel_list[i]
         ch_value = parsing_channel(channel_line,num_of_ch)
         
-        c1 = int(ch_value[0])
-        c2 = int(ch_value[1])
-        c3 = int(ch_value[2])
-        c4 = int(ch_value[3])
+        c1 = float(ch_value[0])
+        c2 = float(ch_value[1])
+        c3 = float(ch_value[2])
+        c4 = float(ch_value[3])
         print(c1,c2,c3,c4)
         ch = str(c1) + '-' + str(c2) + '-' + str(c3) + '-' + str(c4)  
-        SAVE_MODEL_PATH = 'D:/repVGG/model/' + 'resnet18-Size32-' + ch + '.pt'
-        CM_FILENAME = 'resnet18_32_8cls_CM_20220627' + ch + '.png' 
-        net = ResNet(ResBlock,c1,c2,c3,c4)
+        SAVE_MODEL_PATH = '/home/ali/repVGG/model/' + 'repVGG-Size32-' + ch + '.pt'
+        CM_FILENAME = 'repVGG_32_8cls_CM_20220628' + ch + '.png' 
+        #net = ResNet(ResBlock,c1,c2,c3,c4)
         
-        #net = RepVGG(num_blocks=[2, 2, 2, 2], num_classes=8,
-        #              width_multiplier=[1/c1, 1/c2 , 1/c3, 1/c4], override_groups_map=None, deploy=False)
+        net = RepVGG(num_blocks=[2, 4, 14, 1], num_classes=8,
+                      width_multiplier=[c1, c2, c3, c4], override_groups_map=None, deploy=False)
         if torch.cuda.is_available():
             net.cuda() 
             
@@ -360,10 +360,10 @@ if __name__=="__main__":
     fields = ['ch1', 'ch2', 'ch3', 'ch4', 'val_pre', 'val_rec', 'val_acc', 'val_loss']
     
     
-    result_dir = "D:/repVGG/result/"
+    result_dir = "/home/ali/repVGG/result/"
     if not os.path.exists(result_dir):
         os.makedirs(result_dir)
-    result_path = "D:/repVGG/result/resnet18_Train_Result-20220527.csv"
+    result_path = "/home/ali/repVGG/result/repVGG_Train_Result-20220528.csv"
     import csv
     with open(result_path, 'w') as f:
         # using csv.writer method from CSV package
