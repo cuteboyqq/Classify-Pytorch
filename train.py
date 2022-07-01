@@ -45,6 +45,8 @@ def train(DO_TRAIN,
           IMAGE_SIZE,
           BATCH_SIZE,
           SAVE_MODEL_PATH,
+          ENABLE_DEPLOY_REPVGG,
+          SAVE_MODEL_PATH_FOR_REPVGG_DEPLOY,
           TRAIN_DATA_DIR,
           VAL_DATA_DIR,
           ENABLE_VALIDATION,
@@ -155,6 +157,7 @@ def train(DO_TRAIN,
         avg_precision_list = []
         avg_recall_list = []
         val_loss_list = []
+        train_loss_list = []
         avg_acc_list = []
         ch = str(c1)+'-'+ str(c2) +'-'+ str(c3) +'-'+ str(c4) #set~~~~~~~~~
         PLOT_TRAIN_LOSS_NAME = ' _Loss_Epoch' + date + 'Size' + str(IMAGE_SIZE) +'-' + ch + ".png"
@@ -228,8 +231,10 @@ def train(DO_TRAIN,
                     print('Start save model !')
                     torch.save(net, SAVE_MODEL_PATH)
                     print('save model complete with loss : %.3f' %(tot_loss))
+                    if ENABLE_DEPLOY_REPVGG:
+                        repvgg_model_convert(net, save_path=SAVE_MODEL_PATH_FOR_REPVGG_DEPLOY, do_copy=True)
+                        print('save repVGG deploy model complete with loss : %.3f' %(tot_loss))
                 epochs.extend([epoch+1])
-                
                 
                 '''
                 ==========================================================
@@ -253,48 +258,52 @@ def train(DO_TRAIN,
                     plt.show()
                            
                 
+                if ENABLE_VALIDATION:
+                    '''
+                    =======================================================
+                    train : Start do validation at each epoch
+                    =======================================================
+                    '''
+                    avg_precision_list, avg_recall_list, val_loss_list, avg_acc_list, sm_pre, sm_recall, sm_ValLoss, sm_acc = Do_Validation_At_Each_Epoch(SAVE_MODEL_PATH,
+                                                                VAL_DATA_DIR,
+                                                                IMAGE_SIZE,
+                                                                ENABLE_VALIDATION,
+                                                                y_pred,
+                                                                y_true,
+                                                                epoch,
+                                                                CM_FILENAME,
+                                                                BATCH_SIZE,
+                                                                class_names,
+                                                                avg_precision_list,
+                                                                avg_recall_list,
+                                                                val_loss_list,
+                                                                avg_acc_list,
+                                                                epochs,
+                                                                save_model,
+                                                                c1,c2,c3,c4,
+                                                                date)
                 
-                '''
-                =======================================================
-                train : Start do validation at each epoch
-                =======================================================
-                '''
-                avg_precision_list, avg_recall_list, val_loss_list, avg_acc_list, sm_pre, sm_recall, sm_ValLoss, sm_acc = Do_Validation_At_Each_Epoch(SAVE_MODEL_PATH,
-                                                            VAL_DATA_DIR,
-                                                            IMAGE_SIZE,
-                                                            ENABLE_VALIDATION,
-                                                            y_pred,
-                                                            y_true,
-                                                            epoch,
-                                                            CM_FILENAME,
-                                                            BATCH_SIZE,
-                                                            class_names,
-                                                            avg_precision_list,
-                                                            avg_recall_list,
-                                                            val_loss_list,
-                                                            avg_acc_list,
-                                                            epochs,
-                                                            save_model,
-                                                            c1,c2,c3,c4,
-                                                            date)
                 
-                
-    return sm_pre, sm_recall, sm_ValLoss, sm_acc
+    return sm_pre, sm_recall, sm_ValLoss, sm_acc, _lowest_loss
         
         
 if __name__=="__main__":
-    
+    '''
+    ==============================================================================
+    Train parameter settings
+    ==============================================================================
+    '''
     DO_TRAIN = True
-    TRAIN_DATA_DIR = r"/home/ali/TLR/datasets/8/2022-06-17-datasets/roi"
-    VAL_DATA_DIR = r"/home/ali/TLR/datasets/8/2022-06-17-datasets/roi-test"
+    TRAIN_DATA_DIR = r"/home/ali/repVGG/datasets/8/roi"
+    VAL_DATA_DIR = r"/home/ali/repVGG/datasets/8/roi-test"
     IMAGE_SIZE = 32
     BATCH_SIZE = 300
-    nums_epoch = 50
+    nums_epoch = 60
     ENABLE_VALIDATION = True
     #CM_FILENAME = "repVGG_32_8cls_CM.png"
     class_names = ['GreenLeft', 'GreenRight', 'GreenStraight','RedLeft','RedRight','YellowLeft','YellowRight','others']
     #c1,c2,c3,c4 = 8,16,32,64
-    date = '-20220628-8cls-repVGG-'
+    date = '-20220701-8cls-repVGG-finetune-b1-2-4-2-'
     #net = RepVGG(num_blocks=[2, 2, 2, 2], num_classes=8,
     #              width_multiplier=[0.25, 0.25, 0.25, 0.25], override_groups_map=None, deploy=False)
     
@@ -305,9 +314,10 @@ if __name__=="__main__":
     ============================================================================
     '''
     channel_list = [
-     "0.75-0.75-0.75-2.5",
-     "1-1-1-2.5",
-     "1.5-1.5-1.5-2.75"
+     "0.25-0.25-0.125-0.125",      #16-32-32-64
+     "0.25-0.25-0.1875-0.09375",   #16-32-48-48
+     "0.25-0.25-0.125-0.09375",    #16-32-32-48   
+     "0.25-0.25-0.125-0.0625"      #16-32-32-32
     ]
     num_of_ch = 4
     
@@ -322,9 +332,16 @@ if __name__=="__main__":
     
     sm_pre, sm_recall, sm_acc, sm_ValLoss = 0.0, 0.0, 0.0, 0.0
     save_model_record = []
-    
+    '''
+    =============================================================================
+    Start training CNN with different combination of channels automatically 
+    (Automatic train by using for loop)
+    =============================================================================
+    ''' 
     for i in range(len(channel_list)):
         channel_line = channel_list[i]
+        
+        ''' parsing channel list, return one channels'''
         ch_value = parsing_channel(channel_line,num_of_ch)
         
         c1 = float(ch_value[0])
@@ -332,44 +349,65 @@ if __name__=="__main__":
         c3 = float(ch_value[2])
         c4 = float(ch_value[3])
         print(c1,c2,c3,c4)
-        ch = str(c1) + '-' + str(c2) + '-' + str(c3) + '-' + str(c4)  
-        SAVE_MODEL_PATH = '/home/ali/repVGG/model/' + 'repVGG-Size32-' + ch + '.pt'
-        CM_FILENAME = 'repVGG_32_8cls_CM_20220628' + ch + '.png' 
-        #net = ResNet(ResBlock,c1,c2,c3,c4)
         
-        net = RepVGG(num_blocks=[2, 4, 14, 1], num_classes=8,
+        '''Define save model name & cofusion matrix name'''
+        ch = str(c1) + '-' + str(c2) + '-' + str(c3) + '-' + str(c4)  
+        SAVE_MODEL_PATH = '/home/ali/repVGG/model/' + 'repVGG-Size32-' + ch + '-b1-2-4-2.pt'
+        SAVE_MODEL_PATH_FOR_REPVGG_DEPLOY = '/home/ali/repVGG/model/' + 'repVGG-Size32-deploy-' + ch + '-b1-2-4-2.pt'
+        CM_FILENAME = 'repVGG_32_8cls_CM_20220701_finetune_b1-2-4-2_' + ch + '.png'
+        
+        
+        '''Get the Convolution Neural Network Module'''
+        #net = ResNet(ResBlock,c1,c2,c3,c4)
+        net = RepVGG(num_blocks=[1, 2, 4, 2], num_classes=8,
                       width_multiplier=[c1, c2, c3, c4], override_groups_map=None, deploy=False)
+        
+        ENABLE_DEPLOY_REPVGG = True
+        ''' Use GPU if available'''
         if torch.cuda.is_available():
             net.cuda() 
             
-        sm_pre, sm_recall, sm_ValLoss, sm_acc = train(DO_TRAIN,
-                                                      net,
-                                                      nums_epoch,
-                                                      IMAGE_SIZE,
-                                                      BATCH_SIZE,
-                                                      SAVE_MODEL_PATH,
-                                                      TRAIN_DATA_DIR,
-                                                      VAL_DATA_DIR,
-                                                      ENABLE_VALIDATION,
-                                                      class_names,
-                                                      CM_FILENAME,
-                                                      c1,c2,c3,c4,
-                                                      date)
-        save_model_record.append([c1,c2,c3,c4,sm_pre,sm_recall,sm_acc,sm_ValLoss])
-    '''=========================================================================================='''    
-    fields = ['ch1', 'ch2', 'ch3', 'ch4', 'val_pre', 'val_rec', 'val_acc', 'val_loss']
+        '''Training Model Function'''     
+        sm_pre, sm_recall, sm_ValLoss, sm_acc, _lowest_loss = train(DO_TRAIN,
+                                                                      net,
+                                                                      nums_epoch,
+                                                                      IMAGE_SIZE,
+                                                                      BATCH_SIZE,
+                                                                      SAVE_MODEL_PATH,
+                                                                      ENABLE_DEPLOY_REPVGG,
+                                                                      SAVE_MODEL_PATH_FOR_REPVGG_DEPLOY,
+                                                                      TRAIN_DATA_DIR,
+                                                                      VAL_DATA_DIR,
+                                                                      ENABLE_VALIDATION,
+                                                                      class_names,
+                                                                      CM_FILENAME,
+                                                                      c1,c2,c3,c4,
+                                                                      date)
+        ''' Save model results (channels, acc, pre, recall, val_loss, train_loss) to list '''
+        save_model_record.append([c1,c2,c3,c4,sm_pre,sm_recall,sm_acc,sm_ValLoss,_lowest_loss])
+        
+        
+    '''End of training for loop'''
+    print("All Training with difference channel is done !!") 
     
-    
+    '''
+    =============================================================
+    Saving all model results to csv file :  
+       cvs file content : 
+           model i : c1,c2,c3,c4,sm_pre,sm_recall,sm_acc,sm_ValLoss
+    =============================================================
+    '''
     result_dir = "/home/ali/repVGG/result/"
     if not os.path.exists(result_dir):
         os.makedirs(result_dir)
-    result_path = "/home/ali/repVGG/result/repVGG_Train_Result-20220528.csv"
+    result_path = "/home/ali/repVGG/result/repVGG_Finetune_Result-20220701-b1-2-4-2-part2.csv"
     import csv
+    fields = ['ch1', 'ch2', 'ch3', 'ch4', 'val_pre', 'val_rec', 'val_acc', 'val_loss', 'train_loss']
     with open(result_path, 'w') as f:
         # using csv.writer method from CSV package
         write = csv.writer(f)
         write.writerow(fields)
         write.writerows(save_model_record)
     
-    print("All Training with difference channel is done !!")
+    print("Saving all model results to csv file is done !!")
                  
