@@ -290,12 +290,26 @@ def train(DO_TRAIN,
 if __name__=="__main__":
     '''
     ==============================================================================
-    Train parameter settings
+    You repository dir ~~~~
+    ==============================================================================
+    '''
+    rep_dir = r"C:/repVGG"
+    
+    '''
+    ==============================================================================
+    Train : block numbers settings
+    ==============================================================================
+    '''
+    b1,b2,b3,b4 = 1,2,3,2
+    b_nums = str(b1) + '-' + str(b2) + '-' + str(b3) + '-' + str(b4)
+    '''
+    ==============================================================================
+    Train : parameter settings
     ==============================================================================
     '''
     DO_TRAIN = True
-    TRAIN_DATA_DIR = r"/home/ali/repVGG/datasets/8/roi"
-    VAL_DATA_DIR = r"/home/ali/repVGG/datasets/8/roi-test"
+    TRAIN_DATA_DIR = rep_dir + "/datasets/8/roi"
+    VAL_DATA_DIR = rep_dir + "/datasets/8/roi-test"
     IMAGE_SIZE = 32
     BATCH_SIZE = 300
     nums_epoch = 60
@@ -303,13 +317,13 @@ if __name__=="__main__":
     #CM_FILENAME = "repVGG_32_8cls_CM.png"
     class_names = ['GreenLeft', 'GreenRight', 'GreenStraight','RedLeft','RedRight','YellowLeft','YellowRight','others']
     #c1,c2,c3,c4 = 8,16,32,64
-    date = '-20220701-8cls-repVGG-finetune-b1-2-4-2-'
+    date = '-20220702-8cls-repVGG-finetune-b'+ b_nums
     #net = RepVGG(num_blocks=[2, 2, 2, 2], num_classes=8,
     #              width_multiplier=[0.25, 0.25, 0.25, 0.25], override_groups_map=None, deploy=False)
     
     ''' 
     =============================================================================
-    Start Training Settings :
+    Train :
         prune channel setting list
     ============================================================================
     '''
@@ -334,7 +348,7 @@ if __name__=="__main__":
     save_model_record = []
     '''
     =============================================================================
-    Start training CNN with different combination of channels automatically 
+    Train : Start training CNN with different combination of channels automatically 
     (Automatic train by using for loop)
     =============================================================================
     ''' 
@@ -352,14 +366,14 @@ if __name__=="__main__":
         
         '''Define save model name & cofusion matrix name'''
         ch = str(c1) + '-' + str(c2) + '-' + str(c3) + '-' + str(c4)  
-        SAVE_MODEL_PATH = '/home/ali/repVGG/model/' + 'repVGG-Size32-' + ch + '-b1-2-4-2.pt'
-        SAVE_MODEL_PATH_FOR_REPVGG_DEPLOY = '/home/ali/repVGG/model/' + 'repVGG-Size32-deploy-' + ch + '-b1-2-4-2.pt'
-        CM_FILENAME = 'repVGG_32_8cls_CM_20220701_finetune_b1-2-4-2_' + ch + '.png'
+        SAVE_MODEL_PATH = rep_dir + '/model/' + 'repVGG-Size32-' + ch + '-b' + b_nums + '.pt'
+        SAVE_MODEL_PATH_FOR_REPVGG_DEPLOY = rep_dir + '/model/' + 'repVGG-Size32-deploy-' + ch + '-b' + b_nums + '.pt'
+        CM_FILENAME = 'repVGG_32_8cls_CM_20220702_finetune_b'+ b_nums + '_' + ch + '.png'
         
         
         '''Get the Convolution Neural Network Module'''
         #net = ResNet(ResBlock,c1,c2,c3,c4)
-        net = RepVGG(num_blocks=[1, 2, 4, 2], num_classes=8,
+        net = RepVGG(num_blocks=[b1, b2, b3, b4], num_classes=8,
                       width_multiplier=[c1, c2, c3, c4], override_groups_map=None, deploy=False)
         
         ENABLE_DEPLOY_REPVGG = True
@@ -397,10 +411,10 @@ if __name__=="__main__":
            model i : c1,c2,c3,c4,sm_pre,sm_recall,sm_acc,sm_ValLoss
     =============================================================
     '''
-    result_dir = "/home/ali/repVGG/result/"
+    result_dir = rep_dir + "/result/"
     if not os.path.exists(result_dir):
         os.makedirs(result_dir)
-    result_path = "/home/ali/repVGG/result/repVGG_Finetune_Result-20220701-b1-2-4-2-part2.csv"
+    result_path = rep_dir + "/result/repVGG_Finetune_Result-20220702-b" + b_nums + ".csv"
     import csv
     fields = ['ch1', 'ch2', 'ch3', 'ch4', 'val_pre', 'val_rec', 'val_acc', 'val_loss', 'train_loss']
     with open(result_path, 'w') as f:

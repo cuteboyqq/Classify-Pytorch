@@ -21,13 +21,15 @@ import time
 import torch.nn.functional as F
 import math
 from  utils.plot import *
-val_precision_folder_dir = r'D:/RepVGG/plot_graph/precision/val'
-val_recall_folder_dir = r'D:/RepVGG/plot_graph/recall/val'
-train_loss_dir = r'D:/RepVGG/plot_graph/loss/train'
-val_loss_dir = r'D:/RepVGG/plot_graph/loss/val'
-val_acc_dir = r'D:/RepVGG/plot_graph/acc/val'
-model_dir = r'D:/RepVGG/model'
-
+rep_dir = 'C:/RepVGG'
+val_precision_folder_dir = rep_dir + '/plot_graph/precision/val'
+val_recall_folder_dir = rep_dir + '/plot_graph/recall/val'
+train_loss_dir = rep_dir + '/plot_graph/loss/train'
+val_loss_dir = rep_dir + '/plot_graph/loss/val'
+val_acc_dir = rep_dir + '/plot_graph/acc/val'
+model_dir = rep_dir + '/model'
+confusion_matrix_dir = rep_dir + '/confusion_matrix/'
+ 
 if not os.path.exists(model_dir):
     os.makedirs(model_dir)
 
@@ -63,9 +65,9 @@ def Get_Confusion_Matrix(y_true, y_pred,class_names,CM_FILENAME):
     sns.heatmap(df_cm, annot=True, fmt="d", cmap='BuGn')
     plt.xlabel("prediction")
     plt.ylabel("label (ground truth)")
-    if not os.path.exists("C:/TLR/confusion_matrix"):
-        os.makedirs("C:/TLR/confusion_matrix")
-    save_cm_path = "C:/TLR/confusion_matrix/"+ CM_FILENAME
+    if not os.path.exists(confusion_matrix_dir):
+        os.makedirs(confusion_matrix_dir)
+    save_cm_path = confusion_matrix_dir + CM_FILENAME
     plt.savefig(save_cm_path)
     return cf_matrix
 
