@@ -21,7 +21,7 @@ import time
 import torch.nn.functional as F
 import math
 from  utils.plot import *
-rep_dir = 'C:/RepVGG'
+rep_dir = '/home/ali/repVGG'
 val_precision_folder_dir = rep_dir + '/plot_graph/precision/val'
 val_recall_folder_dir = rep_dir + '/plot_graph/recall/val'
 train_loss_dir = rep_dir + '/plot_graph/loss/train'
@@ -67,7 +67,7 @@ def Get_Confusion_Matrix(y_true, y_pred,class_names,CM_FILENAME):
     plt.ylabel("label (ground truth)")
     if not os.path.exists(confusion_matrix_dir):
         os.makedirs(confusion_matrix_dir)
-    save_cm_path = confusion_matrix_dir + CM_FILENAME
+    save_cm_path = confusion_matrix_dir  + CM_FILENAME
     plt.savefig(save_cm_path)
     return cf_matrix
 

@@ -283,8 +283,16 @@ def train(DO_TRAIN,
                                                                 c1,c2,c3,c4,
                                                                 date)
                 
-                
-    return sm_pre, sm_recall, sm_ValLoss, sm_acc, _lowest_loss
+    if os.path.exists(SAVE_MODEL_PATH):
+        sm_size = os.path.getsize(SAVE_MODEL_PATH)
+    else:
+        sm_size = 0
+    if os.path.exists(SAVE_MODEL_PATH_FOR_REPVGG_DEPLOY):
+        sm_deploy_size = os.path.getsize(SAVE_MODEL_PATH_FOR_REPVGG_DEPLOY)
+    else:
+        sm_deploy_size = 0
+    
+    return sm_pre, sm_recall, sm_ValLoss, sm_acc, _lowest_loss, sm_size, sm_deploy_size
         
         
 if __name__=="__main__":
@@ -293,14 +301,14 @@ if __name__=="__main__":
     You repository dir ~~~~
     ==============================================================================
     '''
-    rep_dir = r"C:/repVGG"
+    rep_dir = "/home/ali/repVGG"
     
     '''
     ==============================================================================
     Train : block numbers settings
     ==============================================================================
     '''
-    b1,b2,b3,b4 = 1,2,3,2
+    b1,b2,b3,b4 = 1,2,2,2
     b_nums = str(b1) + '-' + str(b2) + '-' + str(b3) + '-' + str(b4)
     '''
     ==============================================================================
@@ -328,6 +336,10 @@ if __name__=="__main__":
     ============================================================================
     '''
     channel_list = [
+     "0.25-0.25-0.25-0.125",       #16-32-64-64
+     "0.25-0.25-0.1875-0.125",     #16-32-48-64
+     "0.125-0.1875-0.125-0.125",   #8-24-32-64
+     "0.125-0.1875-0.1875-0.125",  #8-24-48-64
      "0.25-0.25-0.125-0.125",      #16-32-32-64
      "0.25-0.25-0.1875-0.09375",   #16-32-48-48
      "0.25-0.25-0.125-0.09375",    #16-32-32-48   
@@ -382,23 +394,23 @@ if __name__=="__main__":
             net.cuda() 
             
         '''Training Model Function'''     
-        sm_pre, sm_recall, sm_ValLoss, sm_acc, _lowest_loss = train(DO_TRAIN,
-                                                                      net,
-                                                                      nums_epoch,
-                                                                      IMAGE_SIZE,
-                                                                      BATCH_SIZE,
-                                                                      SAVE_MODEL_PATH,
-                                                                      ENABLE_DEPLOY_REPVGG,
-                                                                      SAVE_MODEL_PATH_FOR_REPVGG_DEPLOY,
-                                                                      TRAIN_DATA_DIR,
-                                                                      VAL_DATA_DIR,
-                                                                      ENABLE_VALIDATION,
-                                                                      class_names,
-                                                                      CM_FILENAME,
-                                                                      c1,c2,c3,c4,
-                                                                      date)
+        sm_pre, sm_recall, sm_ValLoss, sm_acc, _lowest_loss, sm_size, sm_deploy_size = train(DO_TRAIN,
+                                                                                              net,
+                                                                                              nums_epoch,
+                                                                                              IMAGE_SIZE,
+                                                                                              BATCH_SIZE,
+                                                                                              SAVE_MODEL_PATH,
+                                                                                              ENABLE_DEPLOY_REPVGG,
+                                                                                              SAVE_MODEL_PATH_FOR_REPVGG_DEPLOY,
+                                                                                              TRAIN_DATA_DIR,
+                                                                                              VAL_DATA_DIR,
+                                                                                              ENABLE_VALIDATION,
+                                                                                              class_names,
+                                                                                              CM_FILENAME,
+                                                                                              c1,c2,c3,c4,
+                                                                                              date)
         ''' Save model results (channels, acc, pre, recall, val_loss, train_loss) to list '''
-        save_model_record.append([c1,c2,c3,c4,sm_pre,sm_recall,sm_acc,sm_ValLoss,_lowest_loss])
+        save_model_record.append([c1,c2,c3,c4,sm_pre,sm_recall,sm_acc,sm_ValLoss,_lowest_loss,sm_size,sm_deploy_size])
         
         
     '''End of training for loop'''
@@ -416,7 +428,7 @@ if __name__=="__main__":
         os.makedirs(result_dir)
     result_path = rep_dir + "/result/repVGG_Finetune_Result-20220702-b" + b_nums + ".csv"
     import csv
-    fields = ['ch1', 'ch2', 'ch3', 'ch4', 'val_pre', 'val_rec', 'val_acc', 'val_loss', 'train_loss']
+    fields = ['ch1', 'ch2', 'ch3', 'ch4', 'val_pre', 'val_rec', 'val_acc', 'val_loss', 'train_loss', 'sm_size', 'sm_deploy_size']
     with open(result_path, 'w') as f:
         # using csv.writer method from CSV package
         write = csv.writer(f)
