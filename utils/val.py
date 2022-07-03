@@ -21,7 +21,7 @@ import time
 import torch.nn.functional as F
 import math
 from  utils.plot import *
-rep_dir = '/home/ali/repVGG'
+rep_dir = 'C:/repVGG'
 val_precision_folder_dir = rep_dir + '/plot_graph/precision/val'
 val_recall_folder_dir = rep_dir + '/plot_graph/recall/val'
 train_loss_dir = rep_dir + '/plot_graph/loss/train'
@@ -235,6 +235,6 @@ def Do_Validation_At_Each_Epoch(SAVE_MODEL_PATH,
         #print("{}".format(recall))
         print("avg prcision = {}".format(avg_precision))
         print("avg recall = {}".format(avg_recall))
-        
+        print("avg acc = {}".format(avg_acc))
         
         return avg_precision_list, avg_recall_list, val_loss_list, avg_acc_list, sm_pre, sm_recall, sm_ValLoss, sm_acc

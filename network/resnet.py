@@ -36,7 +36,7 @@ class ResBlock(nn.Module):
          return out
  
 class ResNet(nn.Module):
-    def __init__(self, ResBlock,c1,c2,c3,c4,num_classes=8):
+    def __init__(self, ResBlock,c1,c2,c3,c4,num_blocks,num_classes=8):
         super(ResNet, self).__init__()
         self.inchannel = 64
         self.conv1 = nn.Sequential(
@@ -44,10 +44,10 @@ class ResNet(nn.Module):
             nn.BatchNorm2d(64),
             nn.ReLU()
         )
-        self.layer1 = self.make_layer(ResBlock, c1, 2, stride=1)#16
-        self.layer2 = self.make_layer(ResBlock, c2, 2, stride=2)#32
-        self.layer3 = self.make_layer(ResBlock, c3, 2, stride=2)#64        
-        self.layer4 = self.make_layer(ResBlock, c4, 2, stride=2)#128        
+        self.layer1 = self.make_layer(ResBlock, c1, num_blocks[0], stride=1)#16
+        self.layer2 = self.make_layer(ResBlock, c2, num_blocks[1], stride=2)#32
+        self.layer3 = self.make_layer(ResBlock, c3, num_blocks[2], stride=2)#64        
+        self.layer4 = self.make_layer(ResBlock, c4, num_blocks[3], stride=2)#128        
         self.fc = nn.Linear(c4, num_classes)#512 for 64*64,128 for 32*32
     #这个函数主要是用来，重复同一个残差块    
     def make_layer(self, block, channels, num_blocks, stride):
