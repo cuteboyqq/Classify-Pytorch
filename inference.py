@@ -26,7 +26,7 @@ INPUT:
 =========================================================================================================================================
 '''
 def Inference(imagedir, modelPath,pred_dir,IMAGE_SIZE):
-    with open(r"/home/ali/TLR/classes.txt", "r") as f:
+    with open(r"c:/repVGG/classes.txt", "r") as f:
         classes = f.read().split("\n")
    
         
@@ -40,21 +40,18 @@ def Inference(imagedir, modelPath,pred_dir,IMAGE_SIZE):
                         #transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])
                         ])
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+    
     model = torch.load(modelPath).to(device)
     model.eval()
     #image = Image.open(urlopen(imagePath)).convert('RGB')
     #image = Image.open(imagePath).convert('RGB')
     #image = cv2.imread(imagePath)
     search_img_dir = imagedir + "/**/*.jpg"
-    #print("imagedir = ",imagedir)
-    img_list = glob.iglob(os.path.join(imagedir,'**','*.jpg'),recursive=True)
-    #print("len(img_list) = ",len(img_list))
+    img_list = glob.iglob(search_img_dir)
     img_count = 0
     y_pred = []   #保存預測label
     y_true = []   #保存實際label
-    #print("img_list:", img_list)
     for img_path in img_list:
-        #print(img_path)
         GT = os.path.basename(os.path.dirname(img_path))
         img = cv2.imread(img_path) # opencv開啟的是BRG
         #cv2.imshow("OpenCV",img)
@@ -213,28 +210,31 @@ def colorstr(*input):
 
     
 if __name__=="__main__":
-    GET_INFER_ACCURACY = True
-    IMAGE_SIZE = 32
-    imagedir = "/home/ali/repVGG/datasets/8/roi-test"
-    modelPath = "/home/ali/repVGG/model/2022-07-02/train/repVGG-Size32-0.25-0.25-0.125-0.125-b2-2-3-2.pt"
-    c1,c2,c3,c4=0.25,0.25,0.125,0.125
+    import yaml
+    with open('C:/repVGG/yaml/inference_cfg.yaml','r') as f:
+        data = yaml.safe_load(f)
+        print(yaml.dump(data))
+        
+    #GET_INFER_ACCURACY = data['GET_INFER_ACCURACY']
+    #IMAGE_SIZE = data['IMAGE_SIZE']
+    #imagedir = data['imagedir']
+    #modelPath = data['modelPath']
+    c1,c2,c3,c4=data['channel'][0],data['channel'][1],data['channel'][2],data['channel'][3]
     ch = str(c1)+'-'+ str(c2) +'-'+ str(c3) +'-'+ str(c4) #set~~~~~~~~~
-    date = "-20220706-"
-    pred_dir = "/home/ali/repVGG/inference/TLR_repVGG" + date + 'Size' + str(IMAGE_SIZE) + '-' + ch + '_result'
-    
-    
-    print("Start Inference")
-    Inference(imagedir, modelPath,pred_dir,IMAGE_SIZE)
-    
+    #date = data['date']
+    pred_dir = data['rep_dir'] + "/inference/TLR_repVGG" + data['date'] + 'Size' + str(data['IMAGE_SIZE']) + '-' + ch + '_result'
+   
+    Inference(data['imagedir'], data['modelPath'],pred_dir,data['IMAGE_SIZE']) 
+   
     PREDICT_RESULT_IMG = pred_dir
-    class_names = ['GreenLeft', 'GreenRight', 'GreenStraight','RedLeft','RedRight','YellowLeft','YellowRight','others']
-    if GET_INFER_ACCURACY:  
+    #class_names = data['class_names']
+    
+    if data['GET_INFER_ACCURACY']:  
         imagedir = PREDICT_RESULT_IMG
         #class_list = ["GreenLeft", "GreenRight", "GreenStraight","RedLeft",
         #              "RedRight","YellowLeft","YellowRight","others"]
-        class_list = class_names
-        print("Start Calculate_Inference_Accuracy")
-        Calculate_Inference_Accuracy(imagedir,class_list)
+        #class_list = class_names
+        Calculate_Inference_Accuracy(imagedir,data['class_names'])
    
     
     COLLECT_FP_IMAGES = True
@@ -250,7 +250,7 @@ if __name__=="__main__":
             predict = img.split("_")[1]
             return GT, predict
         
-        save_dir = "/home/ali/repVGG/FP_datasets-2022-07-06-finetune"
+        save_dir = data['save_fp_img_dir']
         if not os.path.exists(save_dir):os.makedirs(save_dir)
         search_dir = PREDICT_RESULT_IMG
         image_path_list = glob.iglob(os.path.join(search_dir,'**','*.jpg'))

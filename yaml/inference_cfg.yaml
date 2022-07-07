@@ -1,0 +1,15 @@
+rep_dir: "C:/repVGG"
+GET_INFER_ACCURACY: True
+IMAGE_SIZE: 32
+imagedir: "C:/repVGG/datasets/8/roi-test"
+modelPath: "C:/repVGG/model/resnet-Size32-54-87-52-87-b2-2-3-2.pt"
+channel:
+ - 54
+ - 87
+ - 52
+ - 87
+ 
+date: "-20220708-"
+COLLECT_FP_IMAGES: True
+save_fp_img_dir: "C:/repVGG/FP_datasets-2022-07-08"
+class_names: ['GreenLeft', 'GreenRight', 'GreenStraight','RedLeft','RedRight','YellowLeft','YellowRight','others']
