@@ -294,80 +294,20 @@ def train(DO_TRAIN,
     
     return sm_pre, sm_recall, sm_ValLoss, sm_acc, _lowest_loss, sm_size, sm_deploy_size
         
-        
+
+    
+
 if __name__=="__main__":
-    '''
-    ==============================================================================
-    You repository dir ~~~~
-    ==============================================================================
-    '''
-    rep_dir = "C:/repVGG"
     
-    
-    '''
-    ==============================================================================
-    Train net name ~~~~
-    ==============================================================================
-    '''
-    net_name = 'resnet'
-    ENABLE_DEPLOY_REPVGG = False
-    '''
-    ==============================================================================
-    Train : block numbers settings
-    ==============================================================================
-    '''
-    b1,b2,b3,b4 = 2,2,3,2
+    import yaml
+    with open('C:/repVGG/yaml/train_cfg.yaml', 'r') as f:
+        data = yaml.safe_load(f)
+        print(yaml.dump(data))
+   
+    b1,b2,b3,b4 = data['block_num'][0],data['block_num'][1],data['block_num'][2],data['block_num'][3]
     b_nums = str(b1) + '-' + str(b2) + '-' + str(b3) + '-' + str(b4)
-    '''
-    ==============================================================================
-    Train : parameter settings
-    ==============================================================================
-    '''
-    DO_TRAIN = True
-    TRAIN_DATA_DIR = rep_dir + "/datasets/8/roi"
-    VAL_DATA_DIR = rep_dir + "/datasets/8/roi-test"
-    IMAGE_SIZE = 32
-    BATCH_SIZE = 300
-    nums_epoch = 60
-    ENABLE_VALIDATION = True
-    #CM_FILENAME = "repVGG_32_8cls_CM.png"
-    class_names = ['GreenLeft', 'GreenRight', 'GreenStraight','RedLeft','RedRight','YellowLeft','YellowRight','others']
-    #c1,c2,c3,c4 = 8,16,32,64
-    date = '-20220703-8cls-' + net_name + '-finetune-b'+ b_nums
-    #net = RepVGG(num_blocks=[2, 2, 2, 2], num_classes=8,
-    #              width_multiplier=[0.25, 0.25, 0.25, 0.25], override_groups_map=None, deploy=False)
-    
-    ''' 
-    =============================================================================
-    Train :
-        prune channel setting list
-    ============================================================================
-    '''
-    ''' 
-     --repVGG-- 
-    channel_list = [
-     "0.25-0.25-0.25-0.125",       #16-32-64-64
-     "0.25-0.25-0.1875-0.125",     #16-32-48-64
-     "0.125-0.1875-0.125-0.125",   #8-24-32-64
-     "0.125-0.1875-0.1875-0.125",  #8-24-48-64
-     "0.25-0.25-0.125-0.125",      #16-32-32-64
-     "0.25-0.25-0.1875-0.09375",   #16-32-48-48
-     "0.25-0.25-0.125-0.09375",    #16-32-32-48   
-     "0.25-0.25-0.125-0.0625"      #16-32-32-32
-    ]
-    '''
-    channel_list = [
-     "16-32-64-64",       #16-32-64-64
-     "16-32-48-64",     #16-32-48-64
-     "8-24-32-64",   #8-24-32-64
-     "8-24-48-64",  #8-24-48-64
-     "16-32-32-64",      #16-32-32-64
-     "16-32-48-48",   #16-32-48-48
-     "16-32-32-48",    #16-32-32-48   
-     "16-32-32-32"      #16-32-32-32
-    ]
-    num_of_ch = 4
-    
+
+        
     def parsing_channel(channel_line, num_of_ch):
         
         ch_value = [0]*num_of_ch
@@ -376,78 +316,63 @@ if __name__=="__main__":
 
         return ch_value
     
-    
     sm_pre, sm_recall, sm_acc, sm_ValLoss = 0.0, 0.0, 0.0, 0.0
     save_model_record = []
-    '''
-    =============================================================================
-    Train : Start training CNN with different combination of channels automatically 
-    (Automatic train by using for loop)
-    =============================================================================
-    ''' 
-    for i in range(len(channel_list)):
-        channel_line = channel_list[i]
-        
-        ''' parsing channel list, return one channels'''
-        ch_value = parsing_channel(channel_line,num_of_ch)
-        
+    
+    #====================================================================================================
+    #Train : Start training CNN with different combination of channels automatically 
+    #(Automatic train by using for loop)
+    #=====================================================================================================
+     
+    for i in range(len(data['channel_list'])):
+        channel_line = data['channel_list'][i]
+      
+        ch_value = parsing_channel(channel_line,data['num_of_ch'])
         c1 = int(ch_value[0])
         c2 = int(ch_value[1])
         c3 = int(ch_value[2])
         c4 = int(ch_value[3])
         print(c1,c2,c3,c4)
-        
-        '''Define save model name & cofusion matrix name'''
+      
         ch = str(c1) + '-' + str(c2) + '-' + str(c3) + '-' + str(c4)  
-        SAVE_MODEL_PATH = rep_dir + '/model/' +  net_name  +'-Size' + str(IMAGE_SIZE) + '-' + ch + '-b' + b_nums + '.pt'
-        SAVE_MODEL_PATH_FOR_REPVGG_DEPLOY = rep_dir + '/model/' + net_name + '-Size' + str(IMAGE_SIZE) + '-deploy-' + ch + '-b' + b_nums + '.pt'
-        CM_FILENAME = net_name + '_'+ str(IMAGE_SIZE) + '_8cls_CM_20220703_finetune_b'+ b_nums + '_' + ch + '.png'
-        
-        
-        '''Get the Convolution Neural Network Module'''
-        net = ResNet(ResBlock,c1,c2,c3,c4,num_blocks=[b1,b2,b3,b4],num_classes=8)
+        SAVE_MODEL_PATH = data['rep_dir'] + '/model/' +  data['net_name']  +'-Size' + str(data['IMAGE_SIZE']) + '-' + ch + '-b' + b_nums + '.pt'
+        SAVE_MODEL_PATH_FOR_REPVGG_DEPLOY = data['rep_dir'] + '/model/' + data['net_name'] + '-Size' + str(data['IMAGE_SIZE']) + '-deploy-' + ch + '-b' + b_nums + '.pt'
+        CM_FILENAME = data['net_name'] + '_'+ str(data['IMAGE_SIZE']) + '_8cls_CM_20220703_finetune_b'+ b_nums + '_' + ch + '.png'
+      
+        net = ResNet(ResBlock,c1,c2,c3,c4,num_blocks=[b1,b2,b3,b4],num_classes=data['num_classes'])
         #net = RepVGG(num_blocks=[b1, b2, b3, b4], num_classes=8,
                       #width_multiplier=[c1, c2, c3, c4], override_groups_map=None, deploy=False)
         
-        
-        ''' Use GPU if available'''
         if torch.cuda.is_available():
             net.cuda() 
-            
-        '''Training Model Function'''     
-        sm_pre, sm_recall, sm_ValLoss, sm_acc, _lowest_loss, sm_size, sm_deploy_size = train(DO_TRAIN,
+       
+        sm_pre, sm_recall, sm_ValLoss, sm_acc, _lowest_loss, sm_size, sm_deploy_size = train(data['DO_TRAIN'],
                                                                                               net,
-                                                                                              nums_epoch,
-                                                                                              IMAGE_SIZE,
-                                                                                              BATCH_SIZE,
+                                                                                              data['nums_epoch'],
+                                                                                              data['IMAGE_SIZE'],
+                                                                                              data['BATCH_SIZE'],
                                                                                               SAVE_MODEL_PATH,
-                                                                                              ENABLE_DEPLOY_REPVGG,
+                                                                                              data['ENABLE_DEPLOY_REPVGG'],
                                                                                               SAVE_MODEL_PATH_FOR_REPVGG_DEPLOY,
-                                                                                              TRAIN_DATA_DIR,
-                                                                                              VAL_DATA_DIR,
-                                                                                              ENABLE_VALIDATION,
-                                                                                              class_names,
+                                                                                              data['TRAIN_DATA_DIR'],
+                                                                                              data['VAL_DATA_DIR'],
+                                                                                              data['ENABLE_VALIDATION'],
+                                                                                              data['class_names'],
                                                                                               CM_FILENAME,
                                                                                               c1,c2,c3,c4,
-                                                                                              date)
-        ''' Save model results (channels, acc, pre, recall, val_loss, train_loss) to list '''
+                                                                                              data['date'])
+       
         save_model_record.append([c1,c2,c3,c4,sm_pre,sm_recall,sm_acc,sm_ValLoss,_lowest_loss,sm_size,sm_deploy_size])
         
         
-    '''End of training for loop'''
+   
     print("All Training with difference channel is done !!") 
     
-    '''
-    =============================================================
-    Saving all model results to csv file :  
-       cvs file content : 
-           model i : c1,c2,c3,c4,sm_pre,sm_recall,sm_acc,sm_ValLoss
-    =============================================================
-    '''
-    result_dir = rep_dir + "/result/"
+    #================================================================================================================
+    result_dir = data['rep_dir'] + "/result/"
     if not os.path.exists(result_dir):
         os.makedirs(result_dir)
-    result_path = rep_dir + "/result/" + net_name +"_Finetune_Result_Size" + str(IMAGE_SIZE) + "-20220703-b" + b_nums + ".csv"
+    result_path = data['rep_dir'] + "/result/" + data['net_name'] +"_Finetune_Result_Size" + str(data['IMAGE_SIZE']) + data['date']  + ".csv"
     import csv
     fields = ['ch1', 'ch2', 'ch3', 'ch4', 'val_pre', 'val_rec', 'val_acc', 'val_loss', 'train_loss', 'sm_size', 'sm_deploy_size']
     with open(result_path, 'w') as f:
