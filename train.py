@@ -302,7 +302,7 @@ if __name__=="__main__":
     
     import yaml
     rep_dir = os.path.dirname(os.path.realpath(__file__))
-    train_cfg_yaml_path =  dir_path + '/yaml/train_cfg.yaml'
+    train_cfg_yaml_path =  rep_dir + '/yaml/train_cfg.yaml'
     with open(train_cfg_yaml_path, 'r') as f:
         data = yaml.safe_load(f)
         print(yaml.dump(data))
