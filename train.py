@@ -20,6 +20,7 @@ from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_sc
 import torch.nn as nn
 from network.repVGG import *
 from network.resnet import *
+from network.res2net import *
 from utils.val import *
 from PIL import Image
 import matplotlib.pyplot as plt
@@ -332,17 +333,22 @@ if __name__=="__main__":
         c2 = int(ch_value[1])
         c3 = int(ch_value[2])
         c4 = int(ch_value[3])
-        print(c1,c2,c3,c4)
+        print('channel is {},{},{},{}'.format(c1,c2,c3,c4))
       
         ch = str(c1) + '-' + str(c2) + '-' + str(c3) + '-' + str(c4)  
         SAVE_MODEL_PATH = data['rep_dir'] + '/model/' +  data['net_name']  +'-Size' + str(data['IMAGE_SIZE']) + '-' + ch + '-b' + b_nums + '.pt'
         SAVE_MODEL_PATH_FOR_REPVGG_DEPLOY = data['rep_dir'] + '/model/' + data['net_name'] + '-Size' + str(data['IMAGE_SIZE']) + '-deploy-' + ch + '-b' + b_nums + '.pt'
         CM_FILENAME = data['net_name'] + '_'+ str(data['IMAGE_SIZE']) + '_8cls_CM_20220703_finetune_b'+ b_nums + '_' + ch + '.png'
-      
-        #net = ResNet(ResBlock,c1,c2,c3,c4,num_blocks=[b1,b2,b3,b4],num_classes=data['num_classes'])
-        net = RepVGG(num_blocks=[b1, b2, b3, b4], num_classes=data['num_classes'],
-                      width_multiplier=[c1, c2, c3, c4], override_groups_map=None, deploy=False)
         
+        if data['net_name'] == 'resnet' or data['net_name'] == 'Resnet' or data['net_name'] == 'ResNet':
+            net = ResNet(ResBlock,c1,c2,c3,c4,num_blocks=[b1,b2,b3,b4],num_classes=data['num_classes'])
+        elif  data['net_name'] == 'repVGG' or data['net_name'] == 'RepVGG':
+            net = RepVGG(num_blocks=[b1, b2, b3, b4], num_classes=data['num_classes'],
+                      width_multiplier=[c1, c2, c3, c4], override_groups_map=None, deploy=False)
+        elif data['net_name'] == 'res2net' or data['net_name'] == 'Res2net' or data['net_name'] == 'Res2Net':
+            net = Res2Net(Bottle2neck, [c1,c2,c3,c4], [b1, b2, b3, b4], baseWidth = 26, scale = 4)
+            
+        print('using {} network'.format(data['net_name']))
         if torch.cuda.is_available():
             net.cuda() 
        
