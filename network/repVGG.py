@@ -165,12 +165,12 @@ class RepVGG(nn.Module):
 
         self.stage0 = RepVGGBlock(in_channels=3, out_channels=self.in_planes, kernel_size=3, stride=2, padding=1, deploy=self.deploy, use_se=self.use_se)
         self.cur_layer_idx = 1
-        self.stage1 = self._make_stage(int(64 * width_multiplier[0]), num_blocks[0], stride=2)
-        self.stage2 = self._make_stage(int(128 * width_multiplier[1]), num_blocks[1], stride=2)
-        self.stage3 = self._make_stage(int(256 * width_multiplier[2]), num_blocks[2], stride=2)
-        self.stage4 = self._make_stage(int(512 * width_multiplier[3]), num_blocks[3], stride=2)
+        self.stage1 = self._make_stage(int(width_multiplier[0]), num_blocks[0], stride=2)
+        self.stage2 = self._make_stage(int(width_multiplier[1]), num_blocks[1], stride=2)
+        self.stage3 = self._make_stage(int(width_multiplier[2]), num_blocks[2], stride=2)
+        self.stage4 = self._make_stage(int(width_multiplier[3]), num_blocks[3], stride=2)
         self.gap = nn.AdaptiveAvgPool2d(output_size=1)
-        self.linear = nn.Linear(int(512 * width_multiplier[3]), num_classes)
+        self.linear = nn.Linear(int(width_multiplier[3]), num_classes)
 
 
     def _make_stage(self, planes, num_blocks, stride):
@@ -204,61 +204,61 @@ g4_map = {l: 4 for l in optional_groupwise_layers}
 
 def create_RepVGG_A0(deploy=False):
     return RepVGG(num_blocks=[2, 4, 14, 1], num_classes=1000,
-                  width_multiplier=[0.75, 0.75, 0.75, 2.5], override_groups_map=None, deploy=deploy)
+                  width_multiplier=[0.75*64, 0.75*128, 0.75*256, 2.5*512], override_groups_map=None, deploy=deploy)
 
 def create_RepVGG_A1(deploy=False):
     return RepVGG(num_blocks=[2, 4, 14, 1], num_classes=1000,
-                  width_multiplier=[1, 1, 1, 2.5], override_groups_map=None, deploy=deploy)
+                  width_multiplier=[1*64, 1*128, 1*256, 2.5*512], override_groups_map=None, deploy=deploy)
 
 def create_RepVGG_A2(deploy=False):
     return RepVGG(num_blocks=[2, 4, 14, 1], num_classes=1000,
-                  width_multiplier=[1.5, 1.5, 1.5, 2.75], override_groups_map=None, deploy=deploy)
+                  width_multiplier=[1.5*64, 1.5*128, 1.5*256, 2.75*512], override_groups_map=None, deploy=deploy)
 
 def create_RepVGG_B0(deploy=False):
     return RepVGG(num_blocks=[4, 6, 16, 1], num_classes=1000,
-                  width_multiplier=[1, 1, 1, 2.5], override_groups_map=None, deploy=deploy)
+                  width_multiplier=[1*64, 1*128, 1*256, 2.5*512], override_groups_map=None, deploy=deploy)
 
 def create_RepVGG_B1(deploy=False):
     return RepVGG(num_blocks=[4, 6, 16, 1], num_classes=1000,
-                  width_multiplier=[2, 2, 2, 4], override_groups_map=None, deploy=deploy)
+                  width_multiplier=[2*64, 2*128, 2*256, 4*512], override_groups_map=None, deploy=deploy)
 
 def create_RepVGG_B1g2(deploy=False):
     return RepVGG(num_blocks=[4, 6, 16, 1], num_classes=1000,
-                  width_multiplier=[2, 2, 2, 4], override_groups_map=g2_map, deploy=deploy)
+                  width_multiplier=[2*64, 2*128, 2*256, 4*512], override_groups_map=g2_map, deploy=deploy)
 
 def create_RepVGG_B1g4(deploy=False):
     return RepVGG(num_blocks=[4, 6, 16, 1], num_classes=1000,
-                  width_multiplier=[2, 2, 2, 4], override_groups_map=g4_map, deploy=deploy)
+                  width_multiplier=[2*64, 2*128, 2*256, 4*512], override_groups_map=g4_map, deploy=deploy)
 
 
 def create_RepVGG_B2(deploy=False):
     return RepVGG(num_blocks=[4, 6, 16, 1], num_classes=1000,
-                  width_multiplier=[2.5, 2.5, 2.5, 5], override_groups_map=None, deploy=deploy)
+                  width_multiplier=[2.5*64, 2.5*128, 2.5*256, 5*512], override_groups_map=None, deploy=deploy)
 
 def create_RepVGG_B2g2(deploy=False):
     return RepVGG(num_blocks=[4, 6, 16, 1], num_classes=1000,
-                  width_multiplier=[2.5, 2.5, 2.5, 5], override_groups_map=g2_map, deploy=deploy)
+                  width_multiplier=[2.5*64, 2.5*128, 2.5*256, 5*512], override_groups_map=g2_map, deploy=deploy)
 
 def create_RepVGG_B2g4(deploy=False):
     return RepVGG(num_blocks=[4, 6, 16, 1], num_classes=1000,
-                  width_multiplier=[2.5, 2.5, 2.5, 5], override_groups_map=g4_map, deploy=deploy)
+                  width_multiplier=[2.5*64, 2.5*128, 2.5*256, 5*512], override_groups_map=g4_map, deploy=deploy)
 
 
 def create_RepVGG_B3(deploy=False):
     return RepVGG(num_blocks=[4, 6, 16, 1], num_classes=1000,
-                  width_multiplier=[3, 3, 3, 5], override_groups_map=None, deploy=deploy)
+                  width_multiplier=[3*64, 3*128, 3*256, 5*512], override_groups_map=None, deploy=deploy)
 
 def create_RepVGG_B3g2(deploy=False):
     return RepVGG(num_blocks=[4, 6, 16, 1], num_classes=1000,
-                  width_multiplier=[3, 3, 3, 5], override_groups_map=g2_map, deploy=deploy)
+                  width_multiplier=[3*64, 3*128, 3*256, 5*512], override_groups_map=g2_map, deploy=deploy)
 
 def create_RepVGG_B3g4(deploy=False):
     return RepVGG(num_blocks=[4, 6, 16, 1], num_classes=1000,
-                  width_multiplier=[3, 3, 3, 5], override_groups_map=g4_map, deploy=deploy)
+                  width_multiplier=[3*64, 3*128, 3*256, 5*512], override_groups_map=g4_map, deploy=deploy)
 
 def create_RepVGG_D2se(deploy=False):
     return RepVGG(num_blocks=[8, 14, 24, 1], num_classes=1000,
-                  width_multiplier=[2.5, 2.5, 2.5, 5], override_groups_map=None, deploy=deploy, use_se=True)
+                  width_multiplier=[2.5*64, 2.5*128, 2.5*256, 5*512], override_groups_map=None, deploy=deploy, use_se=True)
 
 
 func_dict = {

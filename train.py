@@ -339,9 +339,9 @@ if __name__=="__main__":
         SAVE_MODEL_PATH_FOR_REPVGG_DEPLOY = data['rep_dir'] + '/model/' + data['net_name'] + '-Size' + str(data['IMAGE_SIZE']) + '-deploy-' + ch + '-b' + b_nums + '.pt'
         CM_FILENAME = data['net_name'] + '_'+ str(data['IMAGE_SIZE']) + '_8cls_CM_20220703_finetune_b'+ b_nums + '_' + ch + '.png'
       
-        net = ResNet(ResBlock,c1,c2,c3,c4,num_blocks=[b1,b2,b3,b4],num_classes=data['num_classes'])
-        #net = RepVGG(num_blocks=[b1, b2, b3, b4], num_classes=8,
-                      #width_multiplier=[c1, c2, c3, c4], override_groups_map=None, deploy=False)
+        #net = ResNet(ResBlock,c1,c2,c3,c4,num_blocks=[b1,b2,b3,b4],num_classes=data['num_classes'])
+        net = RepVGG(num_blocks=[b1, b2, b3, b4], num_classes=data['num_classes'],
+                      width_multiplier=[c1, c2, c3, c4], override_groups_map=None, deploy=False)
         
         if torch.cuda.is_available():
             net.cuda() 
