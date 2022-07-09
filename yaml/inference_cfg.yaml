@@ -1,4 +1,4 @@
-rep_dir: "C:/repVGG"
+#rep_dir: "C:/repVGG"
 GET_INFER_ACCURACY: True
 IMAGE_SIZE: 32
 imagedir: "C:/repVGG/datasets/8/roi-test"

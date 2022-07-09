@@ -26,7 +26,9 @@ INPUT:
 =========================================================================================================================================
 '''
 def Inference(imagedir, modelPath,pred_dir,IMAGE_SIZE):
-    with open(r"c:/repVGG/classes.txt", "r") as f:
+    rep_dir = os.path.dirname(os.path.realpath(__file__))
+    classes_txt_path = rep_dir + '/classes.txt'
+    with open(classes_txt_path, "r") as f:
         classes = f.read().split("\n")
    
         
@@ -211,7 +213,9 @@ def colorstr(*input):
     
 if __name__=="__main__":
     import yaml
-    with open('C:/repVGG/yaml/inference_cfg.yaml','r') as f:
+    repo_dir = os.path.dirname(os.path.realpath(__file__))
+    inference_cfg_yaml_path = repo_dir + '/yaml/inference_cfg.yaml'
+    with open(inference_cfg_yaml_path,'r') as f:
         data = yaml.safe_load(f)
         print(yaml.dump(data))
         
@@ -222,7 +226,7 @@ if __name__=="__main__":
     c1,c2,c3,c4=data['channel'][0],data['channel'][1],data['channel'][2],data['channel'][3]
     ch = str(c1)+'-'+ str(c2) +'-'+ str(c3) +'-'+ str(c4) #set~~~~~~~~~
     #date = data['date']
-    pred_dir = data['rep_dir'] + "/inference/TLR_repVGG" + data['date'] + 'Size' + str(data['IMAGE_SIZE']) + '-' + ch + '_result'
+    pred_dir = repo_dir + "/inference/TLR_repVGG" + data['date'] + 'Size' + str(data['IMAGE_SIZE']) + '-' + ch + '_result'
    
     Inference(data['imagedir'], data['modelPath'],pred_dir,data['IMAGE_SIZE']) 
    

@@ -301,7 +301,9 @@ def train(DO_TRAIN,
 if __name__=="__main__":
     
     import yaml
-    with open('C:/repVGG/yaml/train_cfg.yaml', 'r') as f:
+    rep_dir = os.path.dirname(os.path.realpath(__file__))
+    train_cfg_yaml_path =  dir_path + '/yaml/train_cfg.yaml'
+    with open(train_cfg_yaml_path, 'r') as f:
         data = yaml.safe_load(f)
         print(yaml.dump(data))
    
@@ -336,8 +338,8 @@ if __name__=="__main__":
         print('channel is {},{},{},{}'.format(c1,c2,c3,c4))
       
         ch = str(c1) + '-' + str(c2) + '-' + str(c3) + '-' + str(c4)  
-        SAVE_MODEL_PATH = data['rep_dir'] + '/model/' +  data['net_name']  +'-Size' + str(data['IMAGE_SIZE']) + '-' + ch + '-b' + b_nums + '.pt'
-        SAVE_MODEL_PATH_FOR_REPVGG_DEPLOY = data['rep_dir'] + '/model/' + data['net_name'] + '-Size' + str(data['IMAGE_SIZE']) + '-deploy-' + ch + '-b' + b_nums + '.pt'
+        SAVE_MODEL_PATH = rep_dir + '/model/' +  data['net_name']  +'-Size' + str(data['IMAGE_SIZE']) + '-' + ch + '-b' + b_nums + '.pt'
+        SAVE_MODEL_PATH_FOR_REPVGG_DEPLOY = rep_dir + '/model/' + data['net_name'] + '-Size' + str(data['IMAGE_SIZE']) + '-deploy-' + ch + '-b' + b_nums + '.pt'
         CM_FILENAME = data['net_name'] + '_'+ str(data['IMAGE_SIZE']) + '_8cls_CM_20220703_finetune_b'+ b_nums + '_' + ch + '.png'
         
         if data['net_name'] == 'resnet' or data['net_name'] == 'Resnet' or data['net_name'] == 'ResNet':
@@ -375,10 +377,10 @@ if __name__=="__main__":
     print("All Training with difference channel is done !!") 
     
     #================================================================================================================
-    result_dir = data['rep_dir'] + "/result/"
+    result_dir = rep_dir + "/result/"
     if not os.path.exists(result_dir):
         os.makedirs(result_dir)
-    result_path = data['rep_dir'] + "/result/" + data['net_name'] +"_Finetune_Result_Size" + str(data['IMAGE_SIZE']) + data['date']  + ".csv"
+    result_path = rep_dir + "/result/" + data['net_name'] +"_Finetune_Result_Size" + str(data['IMAGE_SIZE']) + data['date']  + ".csv"
     import csv
     fields = ['ch1', 'ch2', 'ch3', 'ch4', 'val_pre', 'val_rec', 'val_acc', 'val_loss', 'train_loss', 'sm_size', 'sm_deploy_size']
     with open(result_path, 'w') as f:

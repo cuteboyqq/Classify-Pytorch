@@ -21,7 +21,9 @@ import time
 import torch.nn.functional as F
 import math
 from  utils.plot import *
-rep_dir = 'C:/repVGG'
+
+val_dir = os.path.dirname(os.path.realpath(__file__))
+rep_dir = os.path.dirname(val_dir)
 val_precision_folder_dir = rep_dir + '/plot_graph/precision/val'
 val_recall_folder_dir = rep_dir + '/plot_graph/recall/val'
 train_loss_dir = rep_dir + '/plot_graph/loss/train'

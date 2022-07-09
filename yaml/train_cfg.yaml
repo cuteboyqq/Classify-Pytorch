@@ -1,17 +1,17 @@
-rep_dir: "C:/repVGG"
+#rep_dir: "C:/repVGG"
 TRAIN_DATA_DIR: "C:/repVGG/datasets/8/roi"
 VAL_DATA_DIR: "C:/repVGG/datasets/8/roi-test"
-net_name: resnet
+net_name: res2net
 ENABLE_DEPLOY_REPVGG: False
 DO_TRAIN: True
 ENABLE_VALIDATION: True
 IMAGE_SIZE: 32
 BATCH_SIZE: 300
-nums_epoch: 2
-date: '-20220708-8cls-resnet-finetune-b-2-2-3-2'
+nums_epoch: 50
+date: '-20220709-8cls-res2net-finetune-b-2-2-3-2'
 channel_list: [
- "54-87-52-87",       #16-32-64-64
- "54-78-54-78",     #16-32-48-64
+ "16-32-64-64",       #16-32-64-64
+ "16-32-48-64",     #16-32-48-64
 ]
 num_of_ch: 4
 block_num:
