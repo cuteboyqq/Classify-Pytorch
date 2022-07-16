@@ -8,17 +8,16 @@ ENABLE_VALIDATION: True
 IMAGE_SIZE: 32
 BATCH_SIZE: 300
 nums_epoch: 50
-date: '-20220709-8cls-res2net-finetune-b-2-2-3-2'
+date: '-20220711-8cls-res2net-finetune-b-3-3-3-3'
 channel_list: [
- "16-32-64-64",       #16-32-64-64
- "16-32-48-64",     #16-32-48-64
+ "16-32-48-64",       #16-32-64-64
 ]
 num_of_ch: 4
 block_num:
- - 2
- - 2
  - 3
- - 2
+ - 3
+ - 3
+ - 3
 num_classes: 8
 class_names: ['GreenLeft', 'GreenRight', 'GreenStraight','RedLeft','RedRight','YellowLeft','YellowRight','others'] 
 

@@ -29,7 +29,7 @@ def main(repo_dir):
     c1,c2,c3,c4=data['channel'][0],data['channel'][1],data['channel'][2],data['channel'][3]
     ch = str(c1)+'-'+ str(c2) +'-'+ str(c3) +'-'+ str(c4) #set~~~~~~~~~
     #date = data['date']
-    pred_dir = repo_dir + "/inference/TLR_repVGG" + data['date'] + 'Size' + str(data['IMAGE_SIZE']) + '-' + ch + '_result'
+    pred_dir = repo_dir + "/inference/TLR_" + data['net'] + data['date'] + 'Size' + str(data['IMAGE_SIZE']) + '-' + ch + '_result'
    
     Inference(data['imagedir'], data['modelPath'],pred_dir,data['IMAGE_SIZE']) 
    
