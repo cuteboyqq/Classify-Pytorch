@@ -13,6 +13,90 @@ import torch.nn.functional as F
 from PIL import Image
 import cv2
 import glob
+
+
+def main(repo_dir):
+    import yaml
+    inference_cfg_yaml_path = repo_dir + '/yaml/inference_cfg.yaml'
+    with open(inference_cfg_yaml_path,'r') as f:
+        data = yaml.safe_load(f)
+        print(yaml.dump(data))
+        
+    #GET_INFER_ACCURACY = data['GET_INFER_ACCURACY']
+    #IMAGE_SIZE = data['IMAGE_SIZE']
+    #imagedir = data['imagedir']
+    #modelPath = data['modelPath']
+    c1,c2,c3,c4=data['channel'][0],data['channel'][1],data['channel'][2],data['channel'][3]
+    ch = str(c1)+'-'+ str(c2) +'-'+ str(c3) +'-'+ str(c4) #set~~~~~~~~~
+    #date = data['date']
+    pred_dir = repo_dir + "/inference/TLR_repVGG" + data['date'] + 'Size' + str(data['IMAGE_SIZE']) + '-' + ch + '_result'
+   
+    Inference(data['imagedir'], data['modelPath'],pred_dir,data['IMAGE_SIZE']) 
+   
+    PREDICT_RESULT_IMG = pred_dir
+    #class_names = data['class_names']
+    
+    if data['GET_INFER_ACCURACY']:  
+        imagedir = PREDICT_RESULT_IMG
+        #class_list = ["GreenLeft", "GreenRight", "GreenStraight","RedLeft",
+        #              "RedRight","YellowLeft","YellowRight","others"]
+        #class_list = class_names
+        Calculate_Inference_Accuracy(imagedir,data['class_names'])
+   
+    
+    COLLECT_FP_IMAGES = True
+    import glob
+    import os
+    import shutil
+    import tqdm
+    if COLLECT_FP_IMAGES:
+        
+        def Analysis_img_path(img_path):
+            img = os.path.basename(img_path)
+            GT = img.split("_")[0]
+            predict = img.split("_")[1]
+            return GT, predict
+        
+        save_dir = data['save_fp_img_dir']
+        if not os.path.exists(save_dir):os.makedirs(save_dir)
+        search_dir = PREDICT_RESULT_IMG
+        image_path_list = glob.iglob(os.path.join(search_dir,'**','*.jpg'))
+        
+        pbar = tqdm.tqdm(image_path_list)
+        PREFIX = colorstr("Search FP images")
+        pbar.desc = f'{PREFIX}'
+        for img_path in pbar:
+            #print(img_path)
+            GT, predict = Analysis_img_path(img_path)
+            #print(GT," ",predict)
+            if not predict == GT:
+                save_label_dir = os.path.join(save_dir,GT)
+                if not os.path.exists(save_label_dir):os.makedirs(save_label_dir)
+                shutil.copy(img_path,save_label_dir) 
+
+def colorstr(*input):
+    # Colors a string https://en.wikipedia.org/wiki/ANSI_escape_code, i.e.  colorstr('blue', 'hello world')
+    *args, string = input if len(input) > 1 else ('blue', 'bold', input[0])  # color arguments, string
+    colors = {'black': '\033[30m',  # basic colors
+              'red': '\033[31m',
+              'green': '\033[32m',
+              'yellow': '\033[33m',
+              'blue': '\033[34m',
+              'magenta': '\033[35m',
+              'cyan': '\033[36m',
+              'white': '\033[37m',
+              'bright_black': '\033[90m',  # bright colors
+              'bright_red': '\033[91m',
+              'bright_green': '\033[92m',
+              'bright_yellow': '\033[93m',
+              'bright_blue': '\033[94m',
+              'bright_magenta': '\033[95m',
+              'bright_cyan': '\033[96m',
+              'bright_white': '\033[97m',
+              'end': '\033[0m',  # misc
+              'bold': '\033[1m',
+              'underline': '\033[4m'}
+    return ''.join(colors[x] for x in args) + f'{string}' + colors['end']
 '''
 =======================================================================================================================================
 FUNCTION : Inference
@@ -185,91 +269,8 @@ def Calculate_Inference_Accuracy(imagedir,class_list):
               "correct:",count_correct[i],"wrong:",count_wrong[i],"recall:", str(int(recall[i]*100)),"%")
 
 
-def colorstr(*input):
-    # Colors a string https://en.wikipedia.org/wiki/ANSI_escape_code, i.e.  colorstr('blue', 'hello world')
-    *args, string = input if len(input) > 1 else ('blue', 'bold', input[0])  # color arguments, string
-    colors = {'black': '\033[30m',  # basic colors
-              'red': '\033[31m',
-              'green': '\033[32m',
-              'yellow': '\033[33m',
-              'blue': '\033[34m',
-              'magenta': '\033[35m',
-              'cyan': '\033[36m',
-              'white': '\033[37m',
-              'bright_black': '\033[90m',  # bright colors
-              'bright_red': '\033[91m',
-              'bright_green': '\033[92m',
-              'bright_yellow': '\033[93m',
-              'bright_blue': '\033[94m',
-              'bright_magenta': '\033[95m',
-              'bright_cyan': '\033[96m',
-              'bright_white': '\033[97m',
-              'end': '\033[0m',  # misc
-              'bold': '\033[1m',
-              'underline': '\033[4m'}
-    return ''.join(colors[x] for x in args) + f'{string}' + colors['end']
-
-
-    
 if __name__=="__main__":
-    import yaml
     repo_dir = os.path.dirname(os.path.realpath(__file__))
-    inference_cfg_yaml_path = repo_dir + '/yaml/inference_cfg.yaml'
-    with open(inference_cfg_yaml_path,'r') as f:
-        data = yaml.safe_load(f)
-        print(yaml.dump(data))
-        
-    #GET_INFER_ACCURACY = data['GET_INFER_ACCURACY']
-    #IMAGE_SIZE = data['IMAGE_SIZE']
-    #imagedir = data['imagedir']
-    #modelPath = data['modelPath']
-    c1,c2,c3,c4=data['channel'][0],data['channel'][1],data['channel'][2],data['channel'][3]
-    ch = str(c1)+'-'+ str(c2) +'-'+ str(c3) +'-'+ str(c4) #set~~~~~~~~~
-    #date = data['date']
-    pred_dir = repo_dir + "/inference/TLR_repVGG" + data['date'] + 'Size' + str(data['IMAGE_SIZE']) + '-' + ch + '_result'
-   
-    Inference(data['imagedir'], data['modelPath'],pred_dir,data['IMAGE_SIZE']) 
-   
-    PREDICT_RESULT_IMG = pred_dir
-    #class_names = data['class_names']
-    
-    if data['GET_INFER_ACCURACY']:  
-        imagedir = PREDICT_RESULT_IMG
-        #class_list = ["GreenLeft", "GreenRight", "GreenStraight","RedLeft",
-        #              "RedRight","YellowLeft","YellowRight","others"]
-        #class_list = class_names
-        Calculate_Inference_Accuracy(imagedir,data['class_names'])
-   
-    
-    COLLECT_FP_IMAGES = True
-    import glob
-    import os
-    import shutil
-    import tqdm
-    if COLLECT_FP_IMAGES:
-        
-        def Analysis_img_path(img_path):
-            img = os.path.basename(img_path)
-            GT = img.split("_")[0]
-            predict = img.split("_")[1]
-            return GT, predict
-        
-        save_dir = data['save_fp_img_dir']
-        if not os.path.exists(save_dir):os.makedirs(save_dir)
-        search_dir = PREDICT_RESULT_IMG
-        image_path_list = glob.iglob(os.path.join(search_dir,'**','*.jpg'))
-        
-        pbar = tqdm.tqdm(image_path_list)
-        PREFIX = colorstr("Search FP images")
-        pbar.desc = f'{PREFIX}'
-        for img_path in pbar:
-            #print(img_path)
-            GT, predict = Analysis_img_path(img_path)
-            #print(GT," ",predict)
-            if not predict == GT:
-                save_label_dir = os.path.join(save_dir,GT)
-                if not os.path.exists(save_label_dir):os.makedirs(save_label_dir)
-                shutil.copy(img_path,save_label_dir) 
-   
+    main(repo_dir)
     
     
