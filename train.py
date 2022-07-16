@@ -38,7 +38,97 @@ import json
 import warnings
 import torch.nn.functional as F
 
+def main():
+    import yaml
+    rep_dir = os.path.dirname(os.path.realpath(__file__))
+    train_cfg_yaml_path =  rep_dir + '/yaml/train_cfg.yaml'
+    with open(train_cfg_yaml_path, 'r') as f:
+        data = yaml.safe_load(f)
+        print(yaml.dump(data))
+   
+    b1,b2,b3,b4 = data['block_num'][0],data['block_num'][1],data['block_num'][2],data['block_num'][3]
+    b_nums = str(b1) + '-' + str(b2) + '-' + str(b3) + '-' + str(b4)
 
+        
+    def parsing_channel(channel_line, num_of_ch):
+        
+        ch_value = [0]*num_of_ch
+        for i in range(num_of_ch):
+            ch_value[i] = channel_line.split("-")[i]
+
+        return ch_value
+    
+    sm_pre, sm_recall, sm_acc, sm_ValLoss = 0.0, 0.0, 0.0, 0.0
+    save_model_record = []
+    
+    #====================================================================================================
+    #Train : Start training CNN with different combination of channels automatically 
+    #(Automatic train by using for loop)
+    #=====================================================================================================
+     
+    for i in range(len(data['channel_list'])):
+        channel_line = data['channel_list'][i]
+      
+        ch_value = parsing_channel(channel_line,data['num_of_ch'])
+        c1 = int(ch_value[0])
+        c2 = int(ch_value[1])
+        c3 = int(ch_value[2])
+        c4 = int(ch_value[3])
+        print('channel is {},{},{},{}'.format(c1,c2,c3,c4))
+      
+        ch = str(c1) + '-' + str(c2) + '-' + str(c3) + '-' + str(c4)  
+        SAVE_MODEL_PATH = rep_dir + '/model/' +  data['net_name']  +'-Size' + str(data['IMAGE_SIZE']) + '-' + ch + '-b' + b_nums + '.pt'
+        SAVE_MODEL_PATH_FOR_REPVGG_DEPLOY = rep_dir + '/model/' + data['net_name'] + '-Size' + str(data['IMAGE_SIZE']) + '-deploy-' + ch + '-b' + b_nums + '.pt'
+        CM_FILENAME = data['net_name'] + '_'+ str(data['IMAGE_SIZE']) + '_8cls_CM_20220703_finetune_b'+ b_nums + '_' + ch + '.png'
+        
+        if data['net_name'] == 'resnet' or data['net_name'] == 'Resnet' or data['net_name'] == 'ResNet':
+            net = ResNet(ResBlock,c1,c2,c3,c4,num_blocks=[b1,b2,b3,b4],num_classes=data['num_classes'])
+        elif  data['net_name'] == 'repVGG' or data['net_name'] == 'RepVGG':
+            net = RepVGG(num_blocks=[b1, b2, b3, b4], num_classes=data['num_classes'],
+                      width_multiplier=[c1, c2, c3, c4], override_groups_map=None, deploy=False)
+        elif data['net_name'] == 'res2net' or data['net_name'] == 'Res2net' or data['net_name'] == 'Res2Net':
+            net = Res2Net(Bottle2neck, [c1,c2,c3,c4], [b1, b2, b3, b4], baseWidth = 26, scale = 4)
+            
+        print('using {} network'.format(data['net_name']))
+        if torch.cuda.is_available():
+            net.cuda() 
+       
+        sm_pre, sm_recall, sm_ValLoss, sm_acc, _lowest_loss, sm_size, sm_deploy_size = train(data['DO_TRAIN'],
+                                                                                              net,
+                                                                                              data['nums_epoch'],
+                                                                                              data['IMAGE_SIZE'],
+                                                                                              data['BATCH_SIZE'],
+                                                                                              SAVE_MODEL_PATH,
+                                                                                              data['ENABLE_DEPLOY_REPVGG'],
+                                                                                              SAVE_MODEL_PATH_FOR_REPVGG_DEPLOY,
+                                                                                              data['TRAIN_DATA_DIR'],
+                                                                                              data['VAL_DATA_DIR'],
+                                                                                              data['ENABLE_VALIDATION'],
+                                                                                              data['class_names'],
+                                                                                              CM_FILENAME,
+                                                                                              c1,c2,c3,c4,
+                                                                                              data['date'])
+       
+        save_model_record.append([c1,c2,c3,c4,sm_pre,sm_recall,sm_acc,sm_ValLoss,_lowest_loss,sm_size,sm_deploy_size])
+        
+        
+   
+    print("All Training with difference channel is done !!") 
+    
+    #================================================================================================================
+    result_dir = rep_dir + "/result/"
+    if not os.path.exists(result_dir):
+        os.makedirs(result_dir)
+    result_path = rep_dir + "/result/" + data['net_name'] +"_Finetune_Result_Size" + str(data['IMAGE_SIZE']) + data['date']  + ".csv"
+    import csv
+    fields = ['ch1', 'ch2', 'ch3', 'ch4', 'val_pre', 'val_rec', 'val_acc', 'val_loss', 'train_loss', 'sm_size', 'sm_deploy_size']
+    with open(result_path, 'w') as f:
+        # using csv.writer method from CSV package
+        write = csv.writer(f)
+        write.writerow(fields)
+        write.writerows(save_model_record)
+    
+    print("Saving all model results to csv file is done !!")
 
 def train(DO_TRAIN,
           net,
@@ -299,95 +389,8 @@ def train(DO_TRAIN,
     
 
 if __name__=="__main__":
-    
-    import yaml
-    rep_dir = os.path.dirname(os.path.realpath(__file__))
-    train_cfg_yaml_path =  rep_dir + '/yaml/train_cfg.yaml'
-    with open(train_cfg_yaml_path, 'r') as f:
-        data = yaml.safe_load(f)
-        print(yaml.dump(data))
-   
-    b1,b2,b3,b4 = data['block_num'][0],data['block_num'][1],data['block_num'][2],data['block_num'][3]
-    b_nums = str(b1) + '-' + str(b2) + '-' + str(b3) + '-' + str(b4)
-
-        
-    def parsing_channel(channel_line, num_of_ch):
-        
-        ch_value = [0]*num_of_ch
-        for i in range(num_of_ch):
-            ch_value[i] = channel_line.split("-")[i]
-
-        return ch_value
-    
-    sm_pre, sm_recall, sm_acc, sm_ValLoss = 0.0, 0.0, 0.0, 0.0
-    save_model_record = []
-    
-    #====================================================================================================
-    #Train : Start training CNN with different combination of channels automatically 
-    #(Automatic train by using for loop)
-    #=====================================================================================================
-     
-    for i in range(len(data['channel_list'])):
-        channel_line = data['channel_list'][i]
-      
-        ch_value = parsing_channel(channel_line,data['num_of_ch'])
-        c1 = int(ch_value[0])
-        c2 = int(ch_value[1])
-        c3 = int(ch_value[2])
-        c4 = int(ch_value[3])
-        print('channel is {},{},{},{}'.format(c1,c2,c3,c4))
-      
-        ch = str(c1) + '-' + str(c2) + '-' + str(c3) + '-' + str(c4)  
-        SAVE_MODEL_PATH = rep_dir + '/model/' +  data['net_name']  +'-Size' + str(data['IMAGE_SIZE']) + '-' + ch + '-b' + b_nums + '.pt'
-        SAVE_MODEL_PATH_FOR_REPVGG_DEPLOY = rep_dir + '/model/' + data['net_name'] + '-Size' + str(data['IMAGE_SIZE']) + '-deploy-' + ch + '-b' + b_nums + '.pt'
-        CM_FILENAME = data['net_name'] + '_'+ str(data['IMAGE_SIZE']) + '_8cls_CM_20220703_finetune_b'+ b_nums + '_' + ch + '.png'
-        
-        if data['net_name'] == 'resnet' or data['net_name'] == 'Resnet' or data['net_name'] == 'ResNet':
-            net = ResNet(ResBlock,c1,c2,c3,c4,num_blocks=[b1,b2,b3,b4],num_classes=data['num_classes'])
-        elif  data['net_name'] == 'repVGG' or data['net_name'] == 'RepVGG':
-            net = RepVGG(num_blocks=[b1, b2, b3, b4], num_classes=data['num_classes'],
-                      width_multiplier=[c1, c2, c3, c4], override_groups_map=None, deploy=False)
-        elif data['net_name'] == 'res2net' or data['net_name'] == 'Res2net' or data['net_name'] == 'Res2Net':
-            net = Res2Net(Bottle2neck, [c1,c2,c3,c4], [b1, b2, b3, b4], baseWidth = 26, scale = 4)
-            
-        print('using {} network'.format(data['net_name']))
-        if torch.cuda.is_available():
-            net.cuda() 
-       
-        sm_pre, sm_recall, sm_ValLoss, sm_acc, _lowest_loss, sm_size, sm_deploy_size = train(data['DO_TRAIN'],
-                                                                                              net,
-                                                                                              data['nums_epoch'],
-                                                                                              data['IMAGE_SIZE'],
-                                                                                              data['BATCH_SIZE'],
-                                                                                              SAVE_MODEL_PATH,
-                                                                                              data['ENABLE_DEPLOY_REPVGG'],
-                                                                                              SAVE_MODEL_PATH_FOR_REPVGG_DEPLOY,
-                                                                                              data['TRAIN_DATA_DIR'],
-                                                                                              data['VAL_DATA_DIR'],
-                                                                                              data['ENABLE_VALIDATION'],
-                                                                                              data['class_names'],
-                                                                                              CM_FILENAME,
-                                                                                              c1,c2,c3,c4,
-                                                                                              data['date'])
-       
-        save_model_record.append([c1,c2,c3,c4,sm_pre,sm_recall,sm_acc,sm_ValLoss,_lowest_loss,sm_size,sm_deploy_size])
-        
-        
-   
-    print("All Training with difference channel is done !!") 
-    
-    #================================================================================================================
-    result_dir = rep_dir + "/result/"
-    if not os.path.exists(result_dir):
-        os.makedirs(result_dir)
-    result_path = rep_dir + "/result/" + data['net_name'] +"_Finetune_Result_Size" + str(data['IMAGE_SIZE']) + data['date']  + ".csv"
-    import csv
-    fields = ['ch1', 'ch2', 'ch3', 'ch4', 'val_pre', 'val_rec', 'val_acc', 'val_loss', 'train_loss', 'sm_size', 'sm_deploy_size']
-    with open(result_path, 'w') as f:
-        # using csv.writer method from CSV package
-        write = csv.writer(f)
-        write.writerow(fields)
-        write.writerows(save_model_record)
-    
-    print("Saving all model results to csv file is done !!")
-                 
+    try:
+        main()
+    except SystemExit:
+        pass
+  
