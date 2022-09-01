@@ -39,6 +39,7 @@ I use [**Shields IO**](https://shields.io/) for making badges. It is a simple an
 ![Tweet](https://img.shields.io/twitter/url?style=flat-square&logo=twitter&url=https%3A%2F%2Fnavendu.me%2Fnsfw-filter%2Findex.html): This is not essential but it is a cool way to let others know about your project! Clicking this button automatically opens twitter and writes a tweet about your project and link to it. All the user has to do is to click tweet. Isn't that neat? -->
 
 # Demo-Preview
+[(Back to top)](#table-of-contents)
 
 <!-- Add a demo for your project -->
 
@@ -92,13 +93,17 @@ To use this project, first clone the repo on your device using the command below
 # Usage
 [(Back to top)](#table-of-contents)
 
-## Train
 
+## parameter-setting
+[(Back to top)](#table-of-contents)
+
+## Train
+[(Back to top)](#table-of-contents)
 ```
 python train.py 
 ```
 ## Test
-
+[(Back to top)](#table-of-contents)
 ```
 python test.py 
 ```
