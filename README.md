@@ -98,6 +98,8 @@ To use this project, first clone the repo on your device using the command below
 ## parameter-setting
 [(Back to top)](#table-of-contents)
 
+parameter are set in yaml/train_cfg.yaml  and yaml/inference_cfg.yaml 
+
 ## Train
 [(Back to top)](#table-of-contents)
 ```
