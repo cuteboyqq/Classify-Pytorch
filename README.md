@@ -59,6 +59,7 @@ Here is a sample TOC(*wow! such cool!*) that is actually the TOC for this README
 - [Table of contents](#table-of-contents)
 - [Installation](#installation)
 - [Usage](#usage)
+    - [parameter-setting](#parameter-setting)
     - [Train](#Train)
     - [Test](#Test)
 - [Development](#development)
