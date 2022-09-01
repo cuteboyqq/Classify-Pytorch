@@ -1,7 +1,7 @@
 # repVGG
 <!-- Add banner here -->
 
-# Project Title
+# Classify model 
 
 <!-- Add buttons here -->
 
@@ -61,6 +61,8 @@ Here is a sample TOC(*wow! such cool!*) that is actually the TOC for this README
 - [Table of contents](#table-of-contents)
 - [Installation](#installation)
 - [Usage](#usage)
+    - [Train](#Train)
+    - [Test](#Test)
 - [Development](#development)
 - [Contribute](#contribute)
     - [Sponsor](#sponsor)
@@ -70,6 +72,7 @@ Here is a sample TOC(*wow! such cool!*) that is actually the TOC for this README
 
 # Installation
 [(Back to top)](#table-of-contents)
+
 
 <!-- *You might have noticed the **Back to top** button(if not, please notice, it's right there!). This is a good idea because it makes your README **easy to navigate.*** 
 
@@ -91,6 +94,17 @@ To use this project, first clone the repo on your device using the command below
 
 # Usage
 [(Back to top)](#table-of-contents)
+
+## Train
+
+```
+python train.py 
+```
+## Test
+
+```
+python test.py 
+```
 
 <!-- This is optional and it is used to give the user info on how to use the project after installation. This could be added in the Installation section also. -->
 
