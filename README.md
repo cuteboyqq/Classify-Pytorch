@@ -1,6 +1,13 @@
 # Classify-model 
 [(Back to top)](#table-of-contents)
 
+in folder network
+1. resnet
+2. repVGG
+3. res2net
+4. VGG
+
+
 <!-- Add buttons here -->
 
 <!-- Describe your project in brief -->
