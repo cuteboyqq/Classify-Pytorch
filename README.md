@@ -1,4 +1,4 @@
-# Classify model 
+# Classify-model 
 [(Back to top)](#table-of-contents)
 
 <!-- Add buttons here -->
@@ -53,7 +53,7 @@ Here is a random GIF as a placeholder.
 
 Here is a sample TOC(*wow! such cool!*) that is actually the TOC for this README. -->
 
-- [Classify model](#Classify model)
+- [Classify-model](#Classify-model)
 - [Demo-Preview](#demo-preview)
 - [Table of contents](#table-of-contents)
 - [Installation](#installation)
